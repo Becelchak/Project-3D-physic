@@ -1,46 +1,67 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public class Mouse_move : MonoBehaviour
 {
     public Camera player;
-
     private Iteractable previousInteIteractable;
 
     void Update()
     {
-        Ray ray = player.ScreenPointToRay(Input.mousePosition);
+        var ray = player.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         if (!Physics.Raycast(ray, out hit, 100)) return;
         var interacteble = hit.collider.GetComponent<Iteractable>();
         if (interacteble != null)
         {
-            if ((interacteble == this || interacteble == previousInteIteractable) && !Input.GetMouseButton(0)) return;
-            print("Enter");
             interacteble.OnHoverEnter();
-            interacteble.transform.Rotate(0, 0, 1f);
+            var anim = player.GetComponent<Animator>();
+            anim.enabled = true;
 
-            //interacteble.transform.RotateAround(interacteble.transform.position, transform.forward,Time.deltaTime * 20f);
+            switch (!interacteble.GetZoomMode() && interacteble.needZoom)
+            {
+                case true when Input.GetMouseButton(1):
+                    interacteble.Zoom(anim,interacteble.name);
+                    break;
+                case false when Input.GetMouseButton(0):
+                    interacteble.UnZoom(anim, interacteble.name);
+                    break;
+            }
+            // Вращение объекта
+            if ((interacteble != this || interacteble != previousInteIteractable) && Input.GetMouseButton(0) && interacteble.needRotate)
+            {
+                var randomAngle = Random.Range(0.2f, 0.5f);
+                interacteble.transform.Rotate(0, 0, randomAngle);
+            }
+            // Вращение кнопки
+            if (interacteble.isButton && Input.GetMouseButton(0)) 
+                interacteble.ChangeUseMode();
 
-            //var lookPos = interacteble.target.transform.position - interacteble.transform.position;
-            //Quaternion lookRot = Quaternion.LookRotation(lookPos);
-            //lookRot.eulerAngles = new Vector3(lookRot.eulerAngles.x, interacteble.transform.rotation.eulerAngles.y, interacteble.transform.rotation.eulerAngles.z);
-            //interacteble.transform.rotation = Quaternion.Slerp(interacteble.transform.rotation, lookRot, Time.deltaTime * 1.2f);
+            if (interacteble.GetUseMode())
+            {
+                if(Input.GetButton("D"))
+                {
+                    //interacteble.Rotate(Side.Right);
+                    print("Rotate");
+                    interacteble.transform.Rotate(0.001f, 0, 0);
+                }
+                else if (Input.GetButton("A"))
+                {
+                    //interacteble.Rotate(Side.Left);
+                    print("Unrotate");
+                    interacteble.transform.Rotate(-0.001f, 0, 0);
+                }
+
+            }
+
 
             previousInteIteractable = interacteble;
         }
-        else if (previousInteIteractable != null)
+        else if (previousInteIteractable != null && !previousInteIteractable.GetUseMode())
         {
-            print("Exit");
             previousInteIteractable.OnHoverExit();
             previousInteIteractable = null;
         }
     }
-
     void MouseMove()
     {
         //xRot += Input.GetAxis("Mouse X") * sensivity;
