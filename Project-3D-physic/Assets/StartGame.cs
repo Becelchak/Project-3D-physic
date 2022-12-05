@@ -13,7 +13,7 @@ public class StartGame : MonoBehaviour
 
     public void CloseGame()
     {
-        EditorApplication.isPlaying = false;
+        //EditorApplication.isPlaying = false;
         Application.Quit();
     }
 }
