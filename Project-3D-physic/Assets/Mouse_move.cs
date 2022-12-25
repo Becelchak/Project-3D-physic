@@ -10,7 +10,7 @@ public class Mouse_move : MonoBehaviour
     private CanvasGroup UI_menu;
     private CanvasGroup nowUseMenu;
     
-    private bool needMove = true;
+    //private bool needMove = true;
 
     private Animator anim;
 
@@ -23,14 +23,16 @@ public class Mouse_move : MonoBehaviour
     void Update()
     {
         //Следование меню за курсором
-        MovePanel();
+        //MovePanel();
 
         var ray = player.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        if (!Physics.Raycast(ray, out hit, 100)) return;
+        if (!Physics.Raycast(ray, out hit, 90)) return;
         var interacteble = hit.collider.GetComponent<Iteractable>();
         if (interacteble != null)
         {
+            //UpdateUseMode(interacteble);
+
             interacteble.OnHoverEnter();
 
             if ((interacteble != this || interacteble != previousInteIteractable) && Input.GetMouseButton(1))
@@ -44,7 +46,7 @@ public class Mouse_move : MonoBehaviour
                 nowUseMenu.blocksRaycasts = true;
                 nowUseMenu.interactable = true;
 
-                needMove = false;
+                UI_menu.transform.position = Input.mousePosition;
 
             }
 
@@ -96,6 +98,27 @@ public class Mouse_move : MonoBehaviour
             previousInteIteractable = null;
         }
     }
+
+    //private void UpdateUseMode(Iteractable interacteble)
+    //{
+    //    if (!interacteble.GetUseMode()) return;
+    //    switch (interacteble.gameObject.name)
+    //    {
+    //        case "Рупор":
+    //            // Вращение объекта
+    //            if (Input.GetMouseButton(0) &&
+    //                interacteble.needRotate)
+    //            {
+    //                var randomAngle = Random.Range(0.2f, 0.5f);
+    //                interacteble.transform.Rotate(0, 0, randomAngle);
+    //            }
+
+    //            break;
+    //        default:
+    //            break;
+    //    }
+    //}
+
     void MouseMove()
     {
         //xRot += Input.GetAxis("Mouse X") * sensivity;
@@ -105,11 +128,11 @@ public class Mouse_move : MonoBehaviour
         //playerGameObject.transform.rotation = Quaternion.Euler(0f,xRot,0f);
     }
 
-    void MovePanel()
-    {
-        if(needMove)
-            UI_menu.transform.position = Input.mousePosition;
-    }
+    //void MovePanel()
+    //{
+    //    if(needMove)
+    //        UI_menu.transform.position = Input.mousePosition;
+    //}
 
     public void ClosePanel()
     {
@@ -120,7 +143,7 @@ public class Mouse_move : MonoBehaviour
         nowUseMenu.blocksRaycasts = false;
         nowUseMenu.interactable = false;
 
-        needMove = true;
+        //needMove = true;
     }
 
 }

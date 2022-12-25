@@ -13,6 +13,9 @@ public class Iteractable : MonoBehaviour
     public bool needRotate = false;
     public bool isButton = false;
 
+    public string ExploreTextInfo;
+    public string UseTextInfo;
+
     public int MaxNum = 0;
     private int NowNum = 0;
 
@@ -20,6 +23,7 @@ public class Iteractable : MonoBehaviour
     private bool ZoomMode = false;
 
     private GameObject global_UI;
+    private CanvasGroup typeMenuLocal;
     private Button closeMenuButton;
 
     // Находим тип меню для определенного интерактивного предмета
@@ -39,12 +43,19 @@ public class Iteractable : MonoBehaviour
             typeMenu = ui_menu.gameObject.GetComponentsInChildren<CanvasGroup>()[1];
         }
 
+        typeMenuLocal = typeMenu;
+
         // Назначаем функции кнопкам
         animator.enabled = true;
 
+        // Назначение для кнопки "Использовать"
+        var useButton = typeMenu.gameObject.GetComponentsInChildren<Button>()[0];
+        useButton.onClick.AddListener(delegate { UseItem(global_UI); });
+        // Назначение для кнопки "Изучить"
         var exploreButton = typeMenu.gameObject.GetComponentsInChildren<Button>()[1];
         exploreButton.onClick.AddListener(delegate { ExploreItem(global_UI);});
 
+        // Назначение для кнопки "Приблизить"
         if (needZoom)
         {
             var buttonMenu = typeMenu.gameObject.GetComponentsInChildren<Button>()[2];
@@ -53,8 +64,33 @@ public class Iteractable : MonoBehaviour
 
         print("Next");
 
+        // Кнопка закрытия меню взаимодействия
         closeMenuButton = typeMenu.gameObject.GetComponentsInChildren<Button>()[typeMenu.gameObject.GetComponentsInChildren<Button>().Length - 1];
         return typeMenu;
+    }
+
+    void Update()
+    {
+        if (!GetUseMode()) return;
+        switch (gameObject.name)
+        {
+            case "Рупор":
+                // Вращение объекта
+                if (Input.GetKey(KeyCode.D))
+                {
+                    var angle = GameObject.Find("AngleText").GetComponent<Text>();
+                    var rnd = Random.Range(1,2);
+
+                    var randomAngle = Random.Range(1, 2);
+                    transform.Rotate(0, 0, randomAngle);
+
+                    angle.text = int.Parse(angle.text) <= 360 ? (int.Parse(angle.text) + rnd).ToString() : "0";
+                }
+
+                break;
+            default:
+                break;
+        }
     }
 
     private void OnEnable()
@@ -178,22 +214,67 @@ public class Iteractable : MonoBehaviour
 
     void ExploreItem(GameObject ui)
     {
+        // Вывод описания объекта
         var explorePanel = ui.GetComponentsInChildren<CanvasGroup>()[6];
         explorePanel.alpha = 1;
         explorePanel.interactable = true;
         explorePanel.blocksRaycasts = true;
 
+        var text = GameObject.Find("TextDescription").GetComponent<Text>();
+        text.text = ExploreTextInfo;
+
         var closeButton = explorePanel.gameObject.GetComponentInChildren<Button>();
         closeButton.onClick.AddListener(delegate { EndExploreItem(ui); });
+
+        ClosePanel();
     }
 
     void EndExploreItem(GameObject ui)
     {
+        // Закрытие панели с описанием объекта
         var explorePanel = ui.GetComponentsInChildren<CanvasGroup>()[6];
         explorePanel.alpha = 0;
         explorePanel.interactable = false;
         explorePanel.blocksRaycasts = false;
+    }
 
+    void UseItem(GameObject ui)
+    {
+        // Вывод меню с подсказкой к действию
+        var usePanel = ui.GetComponentsInChildren<CanvasGroup>()[8];
+        usePanel.alpha = 1;
+        usePanel.interactable = true;
+        usePanel.blocksRaycasts = true;
+
+        var text = GameObject.Find("UseText").GetComponent<Text>();
+        text.text = UseTextInfo;
+
+        var closeButton = usePanel.gameObject.GetComponentInChildren<Button>();
+        closeButton.onClick.AddListener(delegate { EndUseItem(ui); });
+
+        ClosePanel();
+        NowUsed = true;
+    }
+
+    void EndUseItem(GameObject ui)
+    {
+        var usePanel = ui.GetComponentsInChildren<CanvasGroup>()[8];
+        usePanel.alpha = 0;
+        usePanel.interactable = false;
+        usePanel.blocksRaycasts = false;
+
+        NowUsed = false;
+    }
+
+    public void ClosePanel()
+    {
+        var ui_menu = typeMenuLocal.transform.parent.gameObject.GetComponentInParent<CanvasGroup>();
+        ui_menu.alpha = 0;
+        ui_menu.interactable = false;
+
+        typeMenuLocal.alpha = 0;
+        typeMenuLocal.blocksRaycasts = false;
+        typeMenuLocal.interactable = false;
     }
 }
 
