@@ -385,9 +385,37 @@ AnimationClip:
   m_HasGenericRootTransform: 1
   m_HasMotionFloatCurves: 0
   m_Events:
+  - time: 0
+    functionName: Toggle
+    data: Buttons
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0
+    functionName: Toggle
+    data: "UI \u0438\u0433\u0440\u043E\u043A\u0430"
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
   - time: 2
     functionName: StopThis
     data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 2
+    functionName: PlayAnimation
+    data: "UI \u0438\u0433\u0440\u043E\u043A\u0430;FadeInGreeting"
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 2
+    functionName: Toggle
+    data: "UI \u0438\u0433\u0440\u043E\u043A\u0430"
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0

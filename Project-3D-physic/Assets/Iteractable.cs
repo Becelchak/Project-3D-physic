@@ -1,30 +1,41 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using static UnityEditor.Progress;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Outline))]
 public class Iteractable : MonoBehaviour
 {
     private Outline outline;
 
-    public bool needZoom  = false;
+    public bool needZoom = false;
     public bool needRotate = false;
     public bool isButton = false;
 
     public string ExploreTextInfo;
     public string UseTextInfo;
 
-    public int MaxNum = 0;
-    private int NowNum = 0;
+    public int minNum;
+
+    private string UseObjectName = "";
 
     private bool NowUsed = false;
     private bool ZoomMode = false;
 
+    // Костыль для диапозона частот усилителя
+    private int step = 0;
+    private List<string> numbers = new List<string>() { "200-1000", "250-930", "880-3000", "2900-10000" };
+
     private GameObject global_UI;
     private CanvasGroup typeMenuLocal;
     private Button closeMenuButton;
+
+    //Костыль для кнопок
+    private Vector3 oldPosItem;
 
     // Находим тип меню для определенного интерактивного предмета
     public CanvasGroup GetTypeMenu(CanvasGroup ui_menu, Animator animator, GameObject Global_UI)
@@ -35,7 +46,7 @@ public class Iteractable : MonoBehaviour
         // Полное меню (Использовать, изучить, приблизить)
         if (needZoom && !isButton)
         {
-            typeMenu  = ui_menu.gameObject.GetComponentsInChildren<CanvasGroup>()[2];
+            typeMenu = ui_menu.gameObject.GetComponentsInChildren<CanvasGroup>()[2];
         }
         // Урезанное меню без приближения
         else if (!needZoom || isButton)
@@ -50,10 +61,13 @@ public class Iteractable : MonoBehaviour
 
         // Назначение для кнопки "Использовать"
         var useButton = typeMenu.gameObject.GetComponentsInChildren<Button>()[0];
+        useButton.onClick.RemoveAllListeners();
         useButton.onClick.AddListener(delegate { UseItem(global_UI); });
+
         // Назначение для кнопки "Изучить"
         var exploreButton = typeMenu.gameObject.GetComponentsInChildren<Button>()[1];
-        exploreButton.onClick.AddListener(delegate { ExploreItem(global_UI);});
+        exploreButton.onClick.RemoveAllListeners();
+        exploreButton.onClick.AddListener(delegate { ExploreItem(global_UI); });
 
         // Назначение для кнопки "Приблизить"
         if (needZoom)
@@ -72,45 +86,94 @@ public class Iteractable : MonoBehaviour
     void Update()
     {
         if (!GetUseMode()) return;
-        switch (gameObject.name)
+        if (UseObjectName == "")
+            UseObjectName = gameObject.name;
+        var IntAmp = GameObject.Find("IntText").GetComponent<Text>();
+        switch (UseObjectName)
         {
             case "Рупор":
-                // Вращение объекта
+                // Вращение рупора
                 if (Input.GetKey(KeyCode.D))
                 {
                     var angle = GameObject.Find("AngleText").GetComponent<Text>();
-                    var rnd = Random.Range(1,2);
+                    var rnd = Random.Range(1, 2);
 
                     var randomAngle = Random.Range(1, 2);
                     transform.Rotate(0, 0, randomAngle);
 
                     angle.text = int.Parse(angle.text) <= 360 ? (int.Parse(angle.text) + rnd).ToString() : "0";
                 }
+                break;
+            case "Усиление":
+                if (Input.GetKey(KeyCode.D))
+                {
+                    var rnd = Random.Range(0.45f, 0.51f);
 
+                    //item.transform.eulerAngles += new Vector3(1, 0, 0) * Time.deltaTime;
+                    //item.transform.rotation = Quaternion.AngleAxis(0.001f, Vector3.right);
+                    //item.transform.RotateAround(oldPosItem, Vector3.right, 0.1f);
+                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) + rnd) > 100 ? "100" : Math.Round(int.Parse(IntAmp.text) + rnd).ToString();
+                }
+                else if (Input.GetKey(KeyCode.A))
+                {
+                    var rnd = Random.Range(0.45f, 0.51f);
+
+                    //item.transform.rotation = Quaternion.AngleAxis(-0.001f, Vector3.right);
+                    //item.transform.eulerAngles -= new Vector3(1, 0, 0) * Time.deltaTime;
+                    //item.transform.RotateAround(oldPosItem, Vector3.right, -0.1f);
+
+                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) - rnd) < 20 ? "20" : Math.Round(int.Parse(IntAmp.text) - rnd).ToString();
+                }
+                break;
+            case "Напряжение":
+                if (Input.GetKey(KeyCode.D))
+                {
+
+                    var rnd = Random.Range(1, 2);
+
+                    IntAmp.text = (int.Parse(IntAmp.text) + rnd) > 1000 ? "1000" : (int.Parse(IntAmp.text) + rnd).ToString();
+                }
+                else if (Input.GetKey(KeyCode.A))
+                {
+                    var rnd = Random.Range(1, 2);
+
+                    IntAmp.text = (int.Parse(IntAmp.text) - rnd) < 1 ? "1" : (int.Parse(IntAmp.text) - rnd).ToString();
+                }
+                break;
+            case "Регулировка частоты":
+                if (Input.GetKey(KeyCode.D))
+                {
+
+                    var rnd = Random.Range(0.45f, 0.51f);
+
+                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) + rnd) > 100 ? "100" : Math.Round(int.Parse(IntAmp.text) + rnd).ToString();
+                }
+                else if (Input.GetKey(KeyCode.A))
+                {
+                    var rnd = Random.Range(0.45f, 0.51f);
+
+                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) - rnd) < 0 ? "0" : Math.Round(int.Parse(IntAmp.text) - rnd).ToString();
+                }
+                break;
+            case "Диапозон частот":
+                if (Input.GetKeyDown(KeyCode.D))
+                {
+                    step = step < 3 ? ++step : step;
+
+                }
+                else if (Input.GetKeyDown(KeyCode.A))
+                {
+                    step = step > 0 ? --step : step;
+                }
+
+                IntAmp.text = numbers[step];
                 break;
             default:
                 break;
         }
     }
 
-    private void OnEnable()
-    {
-        outline = GetComponent<Outline>();
-        outline.OutlineWidth = 0;
-    }
-
-    public void OnHoverEnter()
-    {
-        if(!ZoomMode)
-            outline.OutlineWidth = 4;
-    }
-
-    public void OnHoverExit()
-    {
-        outline.OutlineWidth = 0;
-    }
-
-    public void Zoom(Animator anim,string name)
+    public void Zoom(Animator anim, string name)
     {
         ZoomMode = true;
 
@@ -124,7 +187,7 @@ public class Iteractable : MonoBehaviour
         print("OK");
     }
 
-    public void UnZoom(Animator anim,string name, CanvasGroup exitButtonCanvasGroup)
+    public void UnZoom(Animator anim, string name, CanvasGroup exitButtonCanvasGroup)
     {
         ZoomMode = false;
 
@@ -135,33 +198,33 @@ public class Iteractable : MonoBehaviour
         anim.Play(animName);
     }
 
-    public void Rotate(Side side)
-    {
-        if (side == Side.Right)
-        {
-            if(NowNum++ < MaxNum)
-            {
-                NowNum++;
-                this.transform.Rotate(20f, 0, 0);
-            }
-            else
-            {
-                NowNum = MaxNum;
-            }
-        }
-        else if (side == Side.Left)
-        {
-            if(NowNum-- > 0)
-            {
-                NowNum--;
-                this.transform.Rotate(-20f, 0, 0);
-            }
-            else
-            {
-                NowNum = 0;
-            }
-        }
-    }
+    //public void Rotate(Side side)
+    //{
+    //    if (side == Side.Right)
+    //    {
+    //        if(NowNum++ < MaxNum)
+    //        {
+    //            NowNum++;
+    //            this.transform.Rotate(20f, 0, 0);
+    //        }
+    //        else
+    //        {
+    //            NowNum = MaxNum;
+    //        }
+    //    }
+    //    else if (side == Side.Left)
+    //    {
+    //        if(NowNum-- > 0)
+    //        {
+    //            NowNum--;
+    //            this.transform.Rotate(-20f, 0, 0);
+    //        }
+    //        else
+    //        {
+    //            NowNum = 0;
+    //        }
+    //    }
+    //}
 
     public void ChangeUseMode()
     {
@@ -241,24 +304,23 @@ public class Iteractable : MonoBehaviour
     void UseItem(GameObject ui)
     {
         // Вывод меню с подсказкой к действию
-        var usePanel = ui.GetComponentsInChildren<CanvasGroup>()[8];
+        var usePanel = GetUsePanel();
         usePanel.alpha = 1;
         usePanel.interactable = true;
         usePanel.blocksRaycasts = true;
 
-        var text = GameObject.Find("UseText").GetComponent<Text>();
-        text.text = UseTextInfo;
+        var text = usePanel.GetComponentsInChildren<Text>();
+        text[1].text = UseTextInfo;
 
         var closeButton = usePanel.gameObject.GetComponentInChildren<Button>();
-        closeButton.onClick.AddListener(delegate { EndUseItem(ui); });
+        closeButton.onClick.AddListener(delegate { EndUseItem(usePanel); });
 
         ClosePanel();
         NowUsed = true;
     }
 
-    void EndUseItem(GameObject ui)
+    void EndUseItem(CanvasGroup usePanel)
     {
-        var usePanel = ui.GetComponentsInChildren<CanvasGroup>()[8];
         usePanel.alpha = 0;
         usePanel.interactable = false;
         usePanel.blocksRaycasts = false;
@@ -276,10 +338,90 @@ public class Iteractable : MonoBehaviour
         typeMenuLocal.blocksRaycasts = false;
         typeMenuLocal.interactable = false;
     }
+
+    public CanvasGroup GetUsePanel()
+    {
+        switch (this.gameObject.name)
+        {
+            case "Рупор":
+                return GameObject.Find("UsePanelRupor").GetComponent<CanvasGroup>();
+            case "Усилитель":
+                return GameObject.Find("UsePanelAmplifier").GetComponent<CanvasGroup>();
+            case "Излучатель":
+                return GameObject.Find("UsePanelGeneration").GetComponent<CanvasGroup>();
+            default:
+                break;
+        }
+
+        return new CanvasGroup();
+    }
+
+    //public void CloseAllPanels()
+    //{
+    //    var panels = GameObject.FindObjectsOfType<CanvasGroup>();
+    //    foreach (var panel in panels)
+    //    {
+    //        panel.alpha = 0;
+    //        panel.interactable = false;
+    //        panel.blocksRaycasts = false;
+    //    }
+
+    //    var buttonPanel = GameObject.Find("UsePanelAmpButtons").GetComponent<CanvasGroup>();
+    //    buttonPanel.alpha = 1;
+    //    buttonPanel.interactable = true;
+    //    buttonPanel.blocksRaycasts = true;
+
+    //}
+
+    public void Reinforcement()
+    {
+        UseObjectName = "Усиление";
+
+        PrepareApiButtomsPanel();
+    }
+    public void Voltage()
+    {
+        UseObjectName = "Напряжение";
+
+        PrepareApiButtomsPanel();
+
+    }
+    public void FrequencyСontrol()
+    {
+        UseObjectName = "Регулировка частоты";
+
+        PrepareApiButtomsPanel();
+
+    }
+    public void FrequencyRange()
+    {
+        UseObjectName = "Диапозон частот";
+
+        PrepareApiButtomsPanel();
+
+    }
+
+    void PrepareApiButtomsPanel()
+    {
+        var previousPanel = GameObject.Find("UsePanelAmplifier").GetComponent<CanvasGroup>();
+        previousPanel.alpha = 0;
+        previousPanel.interactable = false;
+        previousPanel.blocksRaycasts = false;
+
+        var panel = GameObject.Find("UsePanelAmpButtons").GetComponent<CanvasGroup>();
+        panel.alpha = 1;
+        panel.interactable = true;
+        panel.blocksRaycasts = true;
+
+        var exit = panel.gameObject.GetComponentsInChildren<Button>()[0];
+        exit.onClick.RemoveAllListeners();
+        exit.onClick.AddListener(delegate { EndUseItem(panel); });
+    }
+
 }
 
-public enum Side
-{
-    Right = 0,
-    Left = 1
-}
+//public enum Side
+//{
+//    Right = 0,
+//    Left = 1
+//}
