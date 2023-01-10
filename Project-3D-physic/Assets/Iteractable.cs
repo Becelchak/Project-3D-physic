@@ -93,23 +93,6 @@ public class Iteractable : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        outline = GetComponent<Outline>();
-        outline.OutlineWidth = 0;
-    }
-
-    public void OnHoverEnter()
-    {
-        if(!ZoomMode)
-            outline.OutlineWidth = 4;
-    }
-
-    public void OnHoverExit()
-    {
-        outline.OutlineWidth = 0;
-    }
-
     public void Zoom(Animator anim,string name)
     {
         ZoomMode = true;
