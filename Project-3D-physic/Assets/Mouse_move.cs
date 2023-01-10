@@ -33,7 +33,7 @@ public class Mouse_move : MonoBehaviour
         {
             //UpdateUseMode(interacteble);
 
-            interacteble.OnHoverEnter();
+            //interacteble.OnHoverEnter();
 
             if ((interacteble != this || interacteble != previousInteIteractable) && Input.GetMouseButton(1))
             {
@@ -94,7 +94,7 @@ public class Mouse_move : MonoBehaviour
         }
         else if (previousInteIteractable != null)
         {
-            previousInteIteractable.OnHoverExit();
+            //previousInteIteractable.OnHoverExit();
             previousInteIteractable = null;
         }
     }
