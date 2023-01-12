@@ -88,7 +88,6 @@ public class Iteractable : MonoBehaviour
         if (!GetUseMode()) return;
         if (UseObjectName == "")
             UseObjectName = gameObject.name;
-        var IntAmp = GameObject.Find("IntText").GetComponent<Text>();
         switch (UseObjectName)
         {
             case "Рупор":
@@ -103,8 +102,19 @@ public class Iteractable : MonoBehaviour
 
                     angle.text = int.Parse(angle.text) <= 360 ? (int.Parse(angle.text) + rnd).ToString() : "0";
                 }
+                else if (Input.GetKey(KeyCode.A))
+                {
+                    var angle = GameObject.Find("AngleText").GetComponent<Text>();
+                    var rnd = Random.Range(1, 2);
+
+                    var randomAngle = Random.Range(1, 2);
+                    transform.Rotate(0, 0, -randomAngle);
+
+                    angle.text = int.Parse(angle.text) >= 0 ? (int.Parse(angle.text) - rnd).ToString() : "360";
+                }
                 break;
             case "Усиление":
+                var IntAmp1 = GameObject.Find("IntText1").GetComponent<Text>();
                 if (Input.GetKey(KeyCode.D))
                 {
                     var rnd = Random.Range(0.45f, 0.51f);
@@ -112,7 +122,7 @@ public class Iteractable : MonoBehaviour
                     //item.transform.eulerAngles += new Vector3(1, 0, 0) * Time.deltaTime;
                     //item.transform.rotation = Quaternion.AngleAxis(0.001f, Vector3.right);
                     //item.transform.RotateAround(oldPosItem, Vector3.right, 0.1f);
-                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) + rnd) > 100 ? "100" : Math.Round(int.Parse(IntAmp.text) + rnd).ToString();
+                    IntAmp1.text = Math.Round(int.Parse(IntAmp1.text) + rnd) > 100 ? "100" : Math.Round(int.Parse(IntAmp1.text) + rnd).ToString();
                 }
                 else if (Input.GetKey(KeyCode.A))
                 {
@@ -122,40 +132,43 @@ public class Iteractable : MonoBehaviour
                     //item.transform.eulerAngles -= new Vector3(1, 0, 0) * Time.deltaTime;
                     //item.transform.RotateAround(oldPosItem, Vector3.right, -0.1f);
 
-                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) - rnd) < 20 ? "20" : Math.Round(int.Parse(IntAmp.text) - rnd).ToString();
+                    IntAmp1.text = Math.Round(int.Parse(IntAmp1.text) - rnd) < 20 ? "20" : Math.Round(int.Parse(IntAmp1.text) - rnd).ToString();
                 }
                 break;
             case "Напряжение":
+                var IntAmp2 = GameObject.Find("IntText2").GetComponent<Text>();
                 if (Input.GetKey(KeyCode.D))
                 {
 
                     var rnd = Random.Range(1, 2);
 
-                    IntAmp.text = (int.Parse(IntAmp.text) + rnd) > 1000 ? "1000" : (int.Parse(IntAmp.text) + rnd).ToString();
+                    IntAmp2.text = (int.Parse(IntAmp2.text) + rnd) > 1000 ? "1000" : (int.Parse(IntAmp2.text) + rnd).ToString();
                 }
                 else if (Input.GetKey(KeyCode.A))
                 {
                     var rnd = Random.Range(1, 2);
 
-                    IntAmp.text = (int.Parse(IntAmp.text) - rnd) < 1 ? "1" : (int.Parse(IntAmp.text) - rnd).ToString();
+                    IntAmp2.text = (int.Parse(IntAmp2.text) - rnd) < 1 ? "1" : (int.Parse(IntAmp2.text) - rnd).ToString();
                 }
                 break;
             case "Регулировка частоты":
+                var IntAmp3 = GameObject.Find("IntText3").GetComponent<Text>();
                 if (Input.GetKey(KeyCode.D))
                 {
 
                     var rnd = Random.Range(0.45f, 0.51f);
 
-                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) + rnd) > 100 ? "100" : Math.Round(int.Parse(IntAmp.text) + rnd).ToString();
+                    IntAmp3.text = Math.Round(int.Parse(IntAmp3.text) + rnd) > 100 ? "100" : Math.Round(int.Parse(IntAmp3.text) + rnd).ToString();
                 }
                 else if (Input.GetKey(KeyCode.A))
                 {
                     var rnd = Random.Range(0.45f, 0.51f);
 
-                    IntAmp.text = Math.Round(int.Parse(IntAmp.text) - rnd) < 0 ? "0" : Math.Round(int.Parse(IntAmp.text) - rnd).ToString();
+                    IntAmp3.text = Math.Round(int.Parse(IntAmp3.text) - rnd) < 0 ? "0" : Math.Round(int.Parse(IntAmp3.text) - rnd).ToString();
                 }
                 break;
             case "Диапозон частот":
+                var IntAmp4 = GameObject.Find("IntText4").GetComponent<Text>();
                 if (Input.GetKeyDown(KeyCode.D))
                 {
                     step = step < 3 ? ++step : step;
@@ -166,7 +179,7 @@ public class Iteractable : MonoBehaviour
                     step = step > 0 ? --step : step;
                 }
 
-                IntAmp.text = numbers[step];
+                IntAmp4.text = numbers[step];
                 break;
             default:
                 break;
@@ -408,7 +421,22 @@ public class Iteractable : MonoBehaviour
         previousPanel.interactable = false;
         previousPanel.blocksRaycasts = false;
 
-        var panel = GameObject.Find("UsePanelAmpButtons").GetComponent<CanvasGroup>();
+        var panel = new CanvasGroup();
+        switch (UseObjectName)
+        {
+            case "Усиление":
+                panel = GameObject.Find("UsePanelAmpButtonReinforcement").GetComponent<CanvasGroup>();
+                break;
+            case "Напряжение":
+                panel = GameObject.Find("UsePanelAmpButtonVoltage").GetComponent<CanvasGroup>();
+                break;
+            case "Регулировка частоты":
+                panel = GameObject.Find("UsePanelAmpButtonFrequencyС").GetComponent<CanvasGroup>();
+                break;
+            case "Диапозон частот":
+                panel = GameObject.Find("UsePanelAmpButtonFrequencyR").GetComponent<CanvasGroup>();
+                break;
+        }
         panel.alpha = 1;
         panel.interactable = true;
         panel.blocksRaycasts = true;
